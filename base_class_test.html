@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script>
+			class base{
+				constructor(value,base){
+					this.base = base;
+					this.decimal = value;
+					this.convert(base);
+				}
+				convert(base){
+					var value = this.decimal;
+					var digits = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+					var result = [];
+					while(value > 0){
+						result.unshift(value%base);
+						value /= base;
+						value = Math.floor(value);
+					}
+					this.value = "";
+					for(let i of result){
+						this.value += digits[i];
+					}
+					if(this.value == ""){
+						this.value = "0"
+					}
+					this.base = base;
+				}
+				add(other){
+					if(typeof other == 'number'){
+            					return new base(this.decimal + other,this.base);
+        				}
+        				else if(typeof other == 'object'){
+            					return new base(this.decimal + other.decimal,this.base);
+        				}
+				}
+    			sub(other){
+        			if(typeof other == 'number'){
+							return new base(this.decimal - other,this.base);
+					}
+					else if(typeof other == 'object'){
+							return new base(this.decimal - other.decimal,this.base);
+					}
+				}
+				ge(other){
+					if(typeof other == 'number'){
+						if(this.decimal >= other){
+							return true;
+						}
+						else{
+							return false;
+						}
+					}
+					else if(typeof other == 'object'){
+						if(this.decimal >= other.value){
+							return true;
+						}
+						else{
+							return false;
+						}
+					}
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<!--The tabs at the top you can use to switch between them-->
+		<div id="tabButtons">
+			<button id="pointsTab" onclick="tab('points')">Points</button>
+			<button id="baseTab" onclick="tab('base')">Base</button>
+			<button id="optionsTab" disabled>Options (coming soon)</button>
+		</div>
+		
+		<div id="points">
+			<h1 id=score>0</h1>
+			<button id = "plusPointButton" onclick = "addPoint()">+1 point</button><br>
+			<button id = "pointGainInc" onclick = "pointGain()">Increase point gain by 1</button>
+			<text id="pointGainCost">Cost: 10</text><br><br>
+			<button id = "basePrest" onclick = "prestige()">reset to enter base 3</button>
+			<text id="scoreBase">Base 2</text>
+			
+			<script>
+				//when you click the +_points button
+				function addPoint(){
+					var gain = pointGainVal;
+					for(var mult of multipliers){
+						gain *= mult;
+					
+					}
+					score = score.add(gain);
+				}
+			</script>
+		</div>
+		<div id="base" hidden = true>
+			<h1 id=baseScore>2</h1>
+			<button onclick = "baseUpgrade(1)" id="baseUpgrade1">Doubles increase point gain. Cost: 1 base</button>
+		</div>
+		<script>
+			//elements that need to be used
+			var scoreTrack = document.getElementById("score");
+			var basePrestButton = document.getElementById("basePrest");
+			var pointGainButton = document.getElementById("pointGainInc");
+			var gainLabel = document.getElementById("pointGainCost");
+			var pointButton = document.getElementById("plusPointButton");
+			
+			//variables
+			var curBase = 2;
+			var score = new base(0,2);
+			var pointGainVal = 1;
+			var pointGainCost = curBase;
+			var multipliers = [];
+			
+			//Things that need to update constantly
+			function updatePage(){
+				scoreTrack.innerHTML = score.value;
+
+				if(score.ge(curBase**6)){
+					basePrestButton.disabled = false;
+					basePrestButton.innerHTML = "Enter base "+(curBase+1)
+				}
+				else{
+					basePrestButton.disabled = true;
+					basePrestButton.innerHTML = "Reach 1000000 points"
+				}
+				
+				if(score.ge(pointGainCost)){
+					pointGainButton.disabled = false;
+				}
+				else{
+					pointGainButton.disabled = true;
+				}
+				score.convert(curBase);
+				gainLabel.innerHTML = "Cost: "+new base(pointGainCost,curBase).value;
+				pointButton.innerHTML = "+"+new base(pointGainVal,curBase).value+" points";
+				if(curBase > 2){
+					document.getElementById("baseUpgrade1").disabled = false;
+				}
+				else{
+					document.getElementById("baseUpgrade1").disabled = true;
+				}
+
+
+
+			}
+			//when you base reset
+			function prestige(){
+				score = score.sub(score);
+				curBase ++;
+				document.getElementById("scoreBase").innerHTML = "Base "+curBase;
+				pointGainCost = curBase;
+				pointGainVal = 1;
+				
+				
+			}
+			//The only pre-base upgrade
+			function pointGain(){
+				pointGainVal ++;
+				score = score.sub(pointGainCost);
+				pointGainCost *= curBase;
+				
+			}
+			//switch tabs
+			function tab(tab){
+				var baseTab = document.getElementById("base");
+				var pointsTab = document.getElementById("points");
+				if(tab == 'points'){
+					baseTab.hidden = true;
+					pointsTab.hidden = false;
+				}
+				if(tab == 'base'){
+					baseTab.hidden = false;
+					pointsTab.hidden = true;
+				}
+			}
+			//buying base upgrades
+			function baseUpgrade(number){
+				curBase -= 1;
+				pointGainVal = 1;
+				pointGainCost = curBase;
+				
+			}
+			setInterval(updatePage,0)
+		</script>
+	</body>
+</html>
