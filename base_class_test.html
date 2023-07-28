@@ -8,23 +8,34 @@
 					this.decimal = value;
 					this.convert(base);
 				}
-				convert(base){
+				convert(toBase){
 					var value = this.decimal;
-					var digits = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+					var digits = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
 					var result = [];
 					while(value > 0){
-						result.unshift(value%base);
-						value /= base;
+						result.unshift(value%toBase);
+						value /= toBase;
 						value = Math.floor(value);
 					}
 					this.value = "";
-					for(let i of result){
-						this.value += digits[i];
+					if(result.length - 1 >= 9){
+						this.value += digits[result[0]]
+						this.value += "."
+						this.value += digits[result[1]]
+						this.value += digits[result[2]]
+						this.value += digits[result[3]]
+						this.value += "e"
+						this.value += new base(result.length-1,this.base).value
+					}
+					else{
+						for(let i of result){
+							this.value += digits[i];
+						}
 					}
 					if(this.value == ""){
 						this.value = "0"
 					}
-					this.base = base;
+					this.base = toBase;
 				}
 				add(other){
 					if(typeof other == 'number'){
@@ -62,8 +73,23 @@
 				}
 			}
 		</script>
+		<style>
+			body{
+				color: white;
+				background-color: black;
+			}
+			button{
+				background-color: #484848;
+				color: white;
+				vertical-align: top;
+			}
+			button:disabled{
+				background-color: #242424;
+				color: #919191;
+			}
+		</style>
 	</head>
-	<body>
+	<body id="body">
 		<!--The tabs at the top you can use to switch between them-->
 		<div id="tabButtons">
 			<button id="pointsTab" onclick="tab('points')">Points</button>
@@ -74,7 +100,7 @@
 		<div id="points">
 			<h1 id=score>0</h1>
 			<button id = "plusPointButton" onclick = "addPoint()">+1 point</button><br>
-			<button id = "pointGainInc" onclick = "pointGain()">Increase point gain by 1</button>
+			<button id = "pointGainInc" onclick = "pointGain()">Increase base point gain by 1</button>
 			<text id="pointGainCost">Cost: 10</text><br><br>
 			<button id = "basePrest" onclick = "prestige()">reset to enter base 3</button>
 			<text id="scoreBase">Base 2</text>
@@ -82,103 +108,217 @@
 			<script>
 				//when you click the +_points button
 				function addPoint(){
-					var gain = pointGainVal;
-					for(var mult of multipliers){
-						gain *= mult;
-					
-					}
+					var gain = multipliers(pointGainBase)
 					score = score.add(gain);
 				}
 			</script>
 		</div>
 		<div id="base" hidden = true>
-			<h1 id=baseScore>2</h1>
-			<button onclick = "baseUpgrade(1)" id="baseUpgrade1">Doubles increase point gain. Cost: 1 base</button>
+			<h1 id=baseScore>You are in base 2</h1>
+			<p>warning: buying anything costing bases will not reset your points but will reset your points upgrades to keep cost scaling in sync.</p>
+			<text>upgrades:</text><br>
+			<button onclick = "baseUpgrade(1)" id="baseUpgrade1" cost="1" style="width: 200px; height: 100px;">Starts the points upgrade at the previous cost step. Cost: 1 base</button>
+			<button onclick = "baseUpgrade(3)" id="baseUpgrade3" cost="3" style="width: 200px; height: 100px;">Multiplies point gain by your current base. Cost: 3 bases</button>
+			<button onclick = "baseUpgrade(2)" id="baseUpgrade2" cost="5" style="width: 200px; height: 100px;">Decreses the requirement of entering the next base based on the log60 of your current base (base^6 → round(base^(6-log60(base)))). Cost: 5 bases</button>
+			
+			<br><br>
+			<h1 id="ipsiAmt">You have 0 ipsiClickers</h1>
+			<button onclick = "ipsiClicker()" id="buyIpsi" cost="1" style="width: 200px; height: 200px; font-size: 20px;">Buy 1 ipsiClicker. Cost: 1 base</button><br>
+			<text>Each time you buy an ipsiClicker, it will create copies of all the previous ones based on what base you end up in.</text>
+			
 		</div>
 		<script>
-			//elements that need to be used
-			var scoreTrack = document.getElementById("score");
-			var basePrestButton = document.getElementById("basePrest");
-			var pointGainButton = document.getElementById("pointGainInc");
-			var gainLabel = document.getElementById("pointGainCost");
-			var pointButton = document.getElementById("plusPointButton");
+			function getElement(elementName){
+				return document.getElementById(elementName)
+			}
 			
-			//variables
+			function multiplyThru(initial,list){
+				for(let i of list){
+					initial*=i
+				}
+				return initial
+			}
+			
+			//points tab elements that need to be used
+			var scoreTrack = getElement("score");
+			var basePrestButton = getElement("basePrest");
+			var pointGainButton = getElement("pointGainInc");
+			var gainLabel = getElement("pointGainCost");
+			var pointButton = getElement("plusPointButton");
+			var scoreBase = getElement("scoreBase");
+			
+			//base tab elements that need to be used
+			var baseScore = getElement("baseScore");
+			var baseUpgrades = [getElement("baseUpgrade1"),getElement("baseUpgrade2"),getElement("baseUpgrade3")]
+			var ipsiAmt = getElement("ipsiAmt");
+			
+			//general variables
 			var curBase = 2;
+			
+			//points variables
 			var score = new base(0,2);
-			var pointGainVal = 1;
+			var pointGainBase = 1;
 			var pointGainCost = curBase;
-			var multipliers = [];
+			var initPointsUpgradeCostStep = 1
+			
+			//base variables
+			var enterCostForm = 1
+			var ipsiAmount = 0
+			var ipsiKey = -1
+			var baseMulti = false
 			
 			//Things that need to update constantly
 			function updatePage(){
+				//update page elements
 				scoreTrack.innerHTML = score.value;
+				score.convert(curBase);
+				gainLabel.innerHTML = "Cost: "+new base(pointGainCost,curBase).value;
+				pointButton.innerHTML = "+"+new base(multipliers(pointGainBase),curBase).value+" points";
+				scoreBase.innerHTML = "Base "+curBase;
+				baseScore.innerHTML = "You are in base "+curBase+". ("+(curBase-2)+" avalible to spend)"
+				ipsiAmt.innerHTML = "You have "+ipsiAmount+" ipsiClickers"
 
-				if(score.ge(curBase**6)){
-					basePrestButton.disabled = false;
-					basePrestButton.innerHTML = "Enter base "+(curBase+1)
-				}
-				else{
-					basePrestButton.disabled = true;
-					basePrestButton.innerHTML = "Reach 1000000 points"
+				//buttons
+				//Enter next base button
+				switch(enterCostForm){
+					case 1:
+						if(score.ge(curBase**6)){
+							basePrestButton.disabled = false;
+							basePrestButton.innerHTML = "Enter base "+(curBase+1)
+						}
+						else{
+							basePrestButton.disabled = true;
+							basePrestButton.innerHTML = "Reach 1000000 points"
+						}
+						break;
+					case 2:
+						if(score.ge(Math.round(curBase**(6-(Math.log(curBase)/Math.log(60)))))){
+							basePrestButton.disabled = false;
+							basePrestButton.innerHTML = "Enter base "+(curBase+1)
+						}
+						else{
+							basePrestButton.disabled = true;
+							basePrestButton.innerHTML = "Reach "+ new base(Math.round(curBase**(6-(Math.log(curBase)/Math.log(60)))),curBase).value +" points"
+						}
 				}
 				
+				//increase point gain button
 				if(score.ge(pointGainCost)){
 					pointGainButton.disabled = false;
 				}
 				else{
 					pointGainButton.disabled = true;
 				}
-				score.convert(curBase);
-				gainLabel.innerHTML = "Cost: "+new base(pointGainCost,curBase).value;
-				pointButton.innerHTML = "+"+new base(pointGainVal,curBase).value+" points";
-				if(curBase > 2){
-					document.getElementById("baseUpgrade1").disabled = false;
+				
+				//base upgrade buttons
+				for(let upgrade of baseUpgrades){
+					if((curBase-2)>=upgrade.getAttribute("cost")){
+						upgrade.disabled = false;
+					}
+					else{
+						upgrade.disabled = true;
+						
+					}
+				}
+				
+				//ipsiClicker button
+				if(curBase-2 >= Number(buyIpsi.getAttribute("cost"))){
+					buyIpsi.disabled = false;
 				}
 				else{
-					document.getElementById("baseUpgrade1").disabled = true;
+					buyIpsi.disabled = true;
+				}
+				
+				//Check for endgame
+				if(curBase == 10){
+					getElement("body").innerHTML="<h1>Congradulations! You reached base 10, and the current end to the game. Thank you for playing.</h1><p>More content will be added soon, such as new mechanichs, prestige layers, and upgrades, but for now this is the end.</p>"
 				}
 
-
-
 			}
+			
 			//when you base reset
 			function prestige(){
 				score = score.sub(score);
 				curBase ++;
 				document.getElementById("scoreBase").innerHTML = "Base "+curBase;
-				pointGainCost = curBase;
-				pointGainVal = 1;
+				pointGainCost = curBase**initPointsUpgradeCostStep;
+				pointGainBase = 1;
 				
 				
 			}
+			
 			//The only pre-base upgrade
 			function pointGain(){
-				pointGainVal ++;
+				pointGainBase ++;
 				score = score.sub(pointGainCost);
 				pointGainCost *= curBase;
 				
 			}
+			
 			//switch tabs
 			function tab(tab){
-				var baseTab = document.getElementById("base");
-				var pointsTab = document.getElementById("points");
-				if(tab == 'points'){
-					baseTab.hidden = true;
-					pointsTab.hidden = false;
+				var tabs = [document.getElementById("base"),document.getElementById("points")]
+				//var baseTab = document.getElementById("base");
+				//var pointsTab = document.getElementById("points");
+				for(let i of tabs){
+					i.hidden = true
 				}
-				if(tab == 'base'){
-					baseTab.hidden = false;
-					pointsTab.hidden = true;
-				}
-			}
-			//buying base upgrades
-			function baseUpgrade(number){
-				curBase -= 1;
-				pointGainVal = 1;
-				pointGainCost = curBase;
+				document.getElementById(tab).hidden = false
 				
 			}
+			
+			//buying base upgrades
+			function baseUpgrade(number){
+				//upgrade 1
+				if(number == 1){
+					curBase -= 1;
+					initPointsUpgradeCostStep = 0;
+					getElement("baseUpgrade1").innerHTML = "Starts the points upgrade at the previous cost step. Bought"
+				}
+				//upgrade 2
+				if(number == 2){
+					curBase -= 5;
+					enterCostForm = 2
+					getElement("baseUpgrade2").innerHTML = "Decreses the requirement of entering the next base based on the log60 of your current base (base^6 → round(base^(6-log60(base)))). Bought"
+				}
+				//upgrade 3
+				if (number == 3){
+					curBase -= 3;
+					baseMulti = true;
+					getElement("baseUpgrade3").innerHTML = "Multiplies point gain by your current base. Bought"
+				}
+				pointGainBase = 1;
+				pointGainCost = curBase**initPointsUpgradeCostStep;
+				baseUpgrades.splice(baseUpgrades.indexOf(getElement("baseUpgrade"+number)),baseUpgrades.indexOf(getElement("baseUpgrade"+number))+1)
+				getElement("baseUpgrade"+number).disabled = true;
+			}
+			
+			//buying ipsiClickers
+			function ipsiClicker(){
+				var cost = getElement("buyIpsi").getAttribute("cost")
+				curBase -= Number(cost)
+				ipsiAmount *= curBase
+				ipsiAmount += 1
+				getElement("buyIpsi").setAttribute("cost",Number(cost)+1)
+				pointGainBase = 1;
+				pointGainCost = curBase**initPointsUpgradeCostStep;
+				cost = getElement("buyIpsi").getAttribute("cost")
+				getElement("buyIpsi").innerHTML = "Buy 1 ipsiClicker. Cost: "+cost+" bases"
+				if(ipsiKey != -1){
+					clearInterval(ipsiKey)
+				}
+				ipsiKey = setInterval(addPoint,1000/(ipsiAmount))
+			}
+			
+			//contains the code for possible multipliers
+			function multipliers(baseAmt){
+				multis = [];
+				multis.push(curBase**baseMulti)
+				
+				
+				return multiplyThru(baseAmt,multis);
+			}
+			
 			setInterval(updatePage,0)
 		</script>
 	</body>
