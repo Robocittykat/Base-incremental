@@ -1,92 +1,12 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<script>
-			var colonThreshold = 61
-			
-			class base{
-				constructor(value,base){
-					this.base = base;
-					this.decimal = value;
-					this.convert(base);
-					//console.log(colonThreshold)
-				}
-				convert(toBase){
-					var value = this.decimal;
-					var digits = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
-					var result = [];
-					
-					if(toBase > 60){
-						toBase = 60;
-					}
-					
-					if(this.decimal == Infinity){
-						this.value = "∞"
-						return
-					}
-					while(value > 0){
-						result.unshift(value%toBase);
-						value /= toBase;
-						value = Math.floor(value);
-					}
-					this.value = "";
-					if(result.length - 1 >= 9){
-						this.value += digits[result[0]]
-						this.value += "."
-						this.value += digits[result[1]]
-						this.value += digits[result[2]]
-						this.value += digits[result[3]]
-						this.value += "e"
-						this.value += new base(result.length-1,this.base).value
-					}
-					else{
-						for(let i of result){
-							this.value += digits[i];
-						}
-					}
-					if(this.value == ""){
-						this.value = "0"
-					}
-					this.base = toBase;
-				}
-				add(other){
-					if(typeof other == 'number'){
-            					return new base(this.decimal + other,this.base);
-        				}
-        				else if(typeof other == 'object'){
-            					return new base(this.decimal + other.decimal,this.base);
-        				}
-				}
-    			sub(other){
-        			if(typeof other == 'number'){
-							return new base(this.decimal - other,this.base);
-					}
-					else if(typeof other == 'object'){
-							return new base(this.decimal - other.decimal,this.base);
-					}
-				}
-				ge(other){
-					if(typeof other == 'number'){
-						if(this.decimal >= other){
-							return true;
-						}
-						else{
-							return false;
-						}
-					}
-					else if(typeof other == 'object'){
-						if(this.decimal >= other.value){
-							return true;
-						}
-						else{
-							return false;
-						}
-					}
-				}
-			}
-		</script>
+		<title>Base incremental</title>
+		<script src="baseClass.js"></script>
 		<style id="basicGameCSS">
 			@font-face { font-family: dmMono; src: url('DMMono-Medium.ttf'); } 
+			
+			
 			
 			body{
 				color: white;
@@ -214,948 +134,140 @@
 		</style>
 	</head>
 	<body id="body" style="nowrap">
-		
-		<!-- news ticker stuff -->
-		
-		<div class="ticker-container">
-			<div class="ticker-wrapper">
-				<div id="movingThingNews" class="ticker-transition">
-					<div class="ticker-item"><text id="currentTicker" style="white-space: pre;"></text></div>
+		<div id="htmlContent">
+			<!-- news ticker stuff -->
+			<div class="ticker-container">
+				<div class="ticker-wrapper">
+					<div id="movingThingNews" class="ticker-transition">
+						<div class="ticker-item"><text id="currentTicker" style="white-space: pre;"></text></div>
+					</div>
 				</div>
 			</div>
-		</div>
-		
-		<script>
-			var newsOptions=[
-				"It should not be this hard to make a news ticker...",
-				//"VROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM",
-				"The creator of antimatter dimensions had requested that your base be capped at nine so that the digit 9 will never show up in your point amount. Sadly, I have no clue how to cap your base.",
-				"Base 1 cannot, does not, and will not ever exist.",
-				"The TAS speedrun record for this game is 10:22. However, that run was completed on a previous version, making it obsolete. That means that the WR is still up for grabs. Be the first to claim it!",
-				"Hevipelle once said that if Gaben can't count to three and he can't count to nine, then there may very well be a game developer that can't count to 27. However, I can't count to one, but no one cares 😢",
-				"The next prestige layer will have lootboxes. Have fun gambling all of your money away on in-game items.",
-				"I learned HTML just to make this stupid game.",
-				"Robocittykat's 3-step guide to making an incremental game: step 1: Add a score counter and a button to increase that. Step 2: Add useless fluff to make it go faster. Step 3: watch number go brrr",
-				"They are called ipsiClickers because ipsi- is the greek alternative for auto-. However, they both actually mean self, so an autoclicker is actually a self-clicker",
-				"In the most glamourous of burrows you will find a base 6",
-				"Base 10 sucks because 1/3 of 10 is not an integer. We should use base 10 instead, because in base 10, 1/10 of 10 is 1.",
-				"Turn away from decimal, seek dozenal instead.",
-				"the number 144 is gross",
-				"The problem with talking about bases is that in base x, we would refer to x as 10, making every base base 10.",
-				"Did you know that time is mostly kept in base 60?",
-				"Just so you know, capital O and lowercase e are not used as digits in this game because capital O could easily be confused with zero while lowercase e is used for scientific notation.",
-				"Base 1 will trick you into believing in it's existance, but it is all a lie.",
-				"Invest in paperclip",
-				"Praise paperclip",
-				"Man do I love forturne cookies. Let's see what my fortune is. 'you will buy a paperclip tomorrow'",
-				"Paperclips are so not useless. You use them for selling them.",
-				"safety pin is evil",
-				"Base 2 crook. Base 60 boss. That's how mafia works.",
-				//"Reach infinite ipsiclickers to win. If you don't know what I mean by infinite, then you haven't played Antimatter dimensions or any game remotely inspired by it.",
-				//"The monkey is at the typewriter, typing the code for the game about the monkey at the typewriter. It will finish in a million years.",
-				"incremental game recomendations: Idle dice by Luts games. Antimatter dimensions by Hevipelle. Universal paperclips by Frank Lantz. The prestige tree by Jacorb90. And of corse, base incremental by Robocittykat.",
-				"This game is based.",
-				"'Incremental games are stupid because you don't do anything but click a button and then lose all of your progress' -everyone who hasn't played an incremental game",
-				"Alexa, play BIG SHOT. Okay, playing big shot, by Billy Joel.",
-				"Stuck? click <a href='https://robocittykat.github.io/Base-incremental-guide/' target='_blank' style='color: dodgerBlue;'>here</a>!",
-				"How are parts of this game already outdated if they were created durring this update?",
-				"Fun fact: you can break this news ticker by going onto another tab, window, or doing anything like that. Don't ask me why, I don't know how the news ticker code works, I just stole it off the internet.",
-				"All your base are belong to us",
-				"This game is a ripoff of Antimatter dimensions. Points are like antimatter, bases are like infinities, log points are like IP, log paths are TT, IpsiClickers are replicanti, etc.",
-				"Who wants to buy a paperclip? Only ten bases, for the best paperclip you've ever seen. Come on down, get your paperclip.",
-				"I have made one other game called account defense. Check it out on Itch.io. Or don't.",
-				"Fun fact: I'm watching You...                                                              ...tube right now what are you doing?"
-			]
 			
-			function newNews(){
-				currentTicker.innerHTML=newsOptions[Math.floor(Math.random()*newsOptions.length)]
-				//currentTicker.innerHTML=newsOptions[newsOptions.length-1]
-				setTimeout(newNews,20000)
-				
-			}
-			newNews()
-		</script>
-		
-		
-		<hr>
-		
-		<!--The tabs at the top you can use to switch between them-->
-		<div id="tabButtons">
-			<button id="pointsTab" onclick="tab('points')" class="pointButton">Points</button>
-			<button id="baseTab" onclick="tab('base')" class="baseButton">Base</button>
-			<button id="logTab" onclick="tab('log')" class="logButton" hidden=true>Log</button>
-			<button id="bitwiseTab" onclick="tab('bitwise')" class="bitwiseButton" hidden="true">Bitwise</button>
-			<button id="autoTab" onclick="tab('auto')" hidden=true>Automation</button>
-			<button id="optionsTab" onclick="tab('options')">Options</button>
-		</div>
-		
-		<div id="points">
-			<h1><span id="score">0</span> points (<span id="scoreBase">Base 2</span>)</h1>
+			<hr>
 			
-			<div style="position: relative;">
-				<button id = "plusPointButton" onclick = "addPoint()" class="pointButton buyable" style="float: left;">+1 point</button>
-				<button id = "pointGainInc" onclick = "pointGain()" class="pointButton" style="width: 100px; height: 200px; font-size: 12;">Increase base point gain by 1.<br><span id="pointGainCost">Cost: 10</span> points</button><br>
-				<button id = "basePrest" onclick = "prestige()" class="baseButton buyable" style="width: 300px; height: 100px;">reset to enter base 3</button>
+			<!--The tabs at the top you can use to switch between them-->
+			<div id="tabButtons">
+				<button id="pointsTabButton" onclick="tab('points')" class="pointButton">Points</button>
+				<button id="baseTabButton" onclick="tab('base')" class="baseButton" hidden=true>Base</button>
+				<button id="logTabButton" onclick="tab('log')" class="logButton" hidden=true>Log</button>
+				<button id="bitwiseTabButton" onclick="tab('bitwise')" class="bitwiseButton" hidden="true">Bitwise</button>
+				<button id="autoTabButton" onclick="tab('auto')" hidden=true>Automation</button>
+				<button id="optionsTabButton" onclick="tab('options')">Options</button>
 			</div>
 			
-			<script>
-				//when you click the +_points button
-				function addPoint(){
-					var gain = multipliers(pointGainBase)
-					score = score.add(gain);
-				}
-			</script>
-			<!--<button class="logButton upgrade"></button>-->
-		</div>
-		<div id="base" hidden = true>
-			<h1 id=baseScore>You are in base 2</h1>
-			<p>warning: buying anything costing bases will not reset your points but will reset your points upgrades to keep cost scaling in sync.</p>
-			<div id="baseChange" hidden=true>
-				<input id="baseSlider" type="range" min="2" max="2" value="2" hidden=true></input>
-				<script>
-					baseSlider.oninput = function(){
-						baseSlideVal.innerHTML = baseSlider.value
-					}
-					function fastEnterBase(){
-						
-						if(!safeFastEnter || baseSlider.value==bestBase){
-							score = new base(0,baseSlider.value)
-							pointsUpgradeTimesBought = 0;
-							pointGainCost = baseSlider.value**initPointsUpgradeCostStep;
-							pointGainBase = 1;
-						}
-						else{
-							score = new base(score.decimal,baseSlider.value)
-							pointGainCost = baseSlider.value**(pointsUpgradeTimesBought-(1-initPointsUpgradeCostStep))
-						}
-						curBase = baseSlider.value
-						document.getElementById("scoreBase").innerHTML = "Base "+curBase;
-					}
-				</script>
-				<button onclick="fastEnterBase()" class="baseButton">Enter base <span id="baseSlideVal">2</span></button>
-				
-			</div>
-			<text>upgrades: (you can hover over some for details)</text><br>
-			<button onclick = "baseUpgrade(1)" id="baseUpgrade1" cost="1" class="baseButton upgrade" style="float: left;">Divides the cost of the points upgrade by your current base. Cost: 1 base</button>
-			<button onclick = "baseUpgrade(4)" id="baseUpgrade4" cost="2" class="upgrade baseButton" style="float: left;">Multiplies your current ipsiClickers by 2 and you gain an extra ipsiClicker whenever you buy them. Cost: 2 bases</button>
-			<button onclick = "baseUpgrade(3)" id="baseUpgrade3" cost="3" class="upgrade baseButton" title="effect caped at x60" style="float: left;">Multiplies point gain by your current base. Cost: 3 bases</button>
-			<button onclick = "baseUpgrade(2)" id="baseUpgrade2" cost="5" class="upgrade baseButton" title="base^6 → base^(6-log60(base))" style="float: left;">Decreses the requirement for entering the next base. Cost: 5 bases</button>
-			<button onclick = "baseUpgrade(5)" id="baseUpgrade5" cost="8" class="upgrade baseButton" title="gain log_base(points) log points on reset" >Unlock log points, gained on base reset, and the log tab. Cost: 8 bases</button>
-			
-			<br><br>
-			<h1 id="ipsiAmt">You have 0 ipsiClickers</h1>
-			<button onclick = "ipsiClicker('base')" id="buyIpsi" cost="1" class="baseButton buyable" style="">Buy 1 ipsiClicker. Cost: 1 base</button>
-			<button onclick = "ipsiClicker('log')" id="buyIpsiLog" cost="1" timesBought="0" class="logButton buyable" style="" hidden=true>Buy 1 ipsiClicker. Cost: 1 log points</button><br>
-			<button onclick="bitwiseReset()" id="bitwisePrestigeButton" class="bitwiseButton buyable" style="height: 100px; width: 400px;" hidden=true>Reach base 60 and 60^3 ipsiClickers (currently 60^0).</button><br>
-			<text>Note: You gain more ipsiClickers the higher your base is when you buy. <span title="Your base after buying multiplies your ipsiClickers, then 1 gets added.">ⓘ</span> Also, ipsiClickers are hardcapped at 100.</text><button onclick="respecIpsi()">respec</button>
-			
-		</div>
-		<div id="log" hidden = true style="nowrap">
-			<h1 id="logAmount">You have 0 log points.</h1>
-			<button id="buyLogPath" onclick="logUpgrade(0)" class="logButton buyable" cost="60">Unlock another path of the log tree. Cost: 60 log points</button>
-			<h1 id="pathAmount">You have 0 unused paths.</h1>
-			<div style="position: relative; z-index: 1;">
-				<svg style="position: absolute; z-index: -1; inset: 0;" width="1125" height="1050">
-					<line x1=600px y1=750px x2=900px y2=525px stroke="white" stroke-width="10"/>
-					<line x1=600px y1=750px x2=300px y2=525px stroke="white" stroke-width="10"/>
-					
-					
-					<line x1=300px y1=525px x2=150px y2=300px stroke="white" stroke-width="10"/>
-					<line x1=300px y1=525px x2=450px y2=300px stroke="white" stroke-width="10"/>
-					
-					<line x1=900px y1=525px x2=750px y2=300px stroke="white" stroke-width="10"/>
-					<line x1=900px y1=525px x2=1050px y2=300px stroke="white" stroke-width="10"/>
-					
-					
-					<line x1=150px y1=300px x2=75px y2=75px stroke="white" stroke-width="10"/>
-					<line x1=150px y1=300px x2=225px y2=75px stroke="white" stroke-width="10"/>
-					
-					<line x1=450px y1=300px x2=375px y2=75px stroke="white" stroke-width="10"/>
-					<line x1=450px y1=300px x2=525px y2=75px stroke="white" stroke-width="10"/>
-					
-					<line x1=750px y1=300px x2=675px y2=75px stroke="white" stroke-width="10"/>
-					<line x1=750px y1=300px x2=825px y2=75px stroke="white" stroke-width="10"/>
-					
-					<line x1=1050px y1=300px x2=975px y2=75px stroke="white" stroke-width="10"/>
-					<line x1=1050px y1=300px x2=1125px y2=75px stroke="white" stroke-width="10"/>
-				</svg>
-				<button id="log1000" class="treeUpgrade" style="left: 0px; top: 0px; position: absolute;" onclick="logUpgrade(1000)">1000<br><br>Multiply point gain by the log<sub>base</sub> of your points.<br><br>  </button>
-				<button id="log1001" class="treeUpgrade" style="left: 150px; top: 0px; position: absolute;" onclick="logUpgrade(1001)" title="Base point gain increases by 4rt(base) (rounded each time bought)">1001<br><br>Increase the effect of the points upgrade.<br><br>  </button>
-				<button id="log1010" class="treeUpgrade" style="left: 300px; top: 0px; position: absolute;" onclick="logUpgrade(1010)">1010<br><br>Multiply point gain by the log<sub>2</sub> of your ipsiClickers.<br><br>  </button>
-				<button id="log1011" class="treeUpgrade" style="left: 450px; top: 0px; position: absolute;" onclick="logUpgrade(1011)">1011<br><br>Base upgrade 3 multiplies by your best base instead of your current base.<br><br>  </button>
-				<button id="log1100" class="treeUpgrade" style="left: 600px; top: 0px; position: absolute;" onclick="logUpgrade(1100)">1100<br><br>The ipsiClicker cost becomes a reqirement instead.<br><br>  </button>
-				<button id="log1101" class="treeUpgrade" style="left: 750px; top: 0px; position: absolute;" onclick="logUpgrade(1101)">1101<br><br>You can buy ipsiClickers using log points, you gain an amount equal to the sqrt of your log points before buying.<br><br>  </button>
-				<button id="log1110" class="treeUpgrade" style="left: 900px; top: 0px; position: absolute;" onclick="logUpgrade(1110)">1110<br><br>Unlock points upgrade autobuyer.<br><br>  </button>
-				<button id="log1111" class="treeUpgrade" style="left: 1050px; top: 0px; position: absolute;" onclick="logUpgrade(1111)" title="You can set the minimum multiplier it will buy at">1111<br><br>Unlock ipsiClicker autobuyer.<br><br>  </button>
-				
-				<button id="log100" class="treeUpgrade" style="left: 75px; top: 225px; position: absolute;" title="Requirement becomes 1 point because log(0) = -infinity">100<br><br>Remove the reqirement for base resetting in completed bases and auto re-enter a completed base.<br><br>  </button>
-				<button id="log101" class="treeUpgrade" style="left: 375px; top: 225px; position: absolute;">101<br><br>On base reset, start with an amount of points equal to your log points.<br><br>  </button>
-				<button id="log110" class="treeUpgrade" style="left: 675px; top: 225px; position: absolute;">110<br><br>Start with 100 ipsiClickers on respec (getting this upgrade respecs your ipsiClickers).<br><br>  </button>
-				<button id="log111" class="treeUpgrade" style="left: 975px; top: 225px; position: absolute;" title="You can set minimum log points to gain on reset">111<br><br>Unlock base autobuyer.<br><br>  </button>
-				
-				<button id="log10" class="treeUpgrade" style="left: 225px; top: 450px; position: absolute;">10<br><br>You can freely change your base, up to your best base.<br><br>  </button>
-				<button id="log11" class="treeUpgrade" style="left: 825px; top: 450px; position: absolute;" title="The multiplied portion of ipsiClickers is sqrted beyond 100">11<br><br>You can surpass 100 ipsiClickers, beyond 100 they provide a multiplier instead and are heavily softcapped.<br><br>  </button>
-				
-				<button id="log1" class="treeUpgrade" style="left: 525px; top: 675px; position: absolute;">1<br><br>Raise log points to the sqrt of the base you're exiting.<br><br>  </button>
-			</div>
-			
-			
-			
-			
-			
-			
-			
-		</div>
-		<div id="bitwise" hidden="true">
-			<h1>You have <span id="bitwiseAmount">0</span> bitwise points, being bitwise-or-ed to your base point gain.</h1>
-			<text>There is nothing to do in this tab at the moment. In a few updates this will be the main subject of an update.</text><br>
-			<p>Bitwise operators are very unlike normal operators. The way that they work is you convert both inputs into binary and then sequentially do a logic gate between the nth digit of input 1 with the nth digit of input 2.</p>
-		</div>
-		<div id="auto" hidden = true>
-			<div id="baseAutobuyer" hidden = true>
-				<input type="checkbox" id="baseAutoEnabled"></input><text>Base reset at x log points.</text><input id="baseAutoAmt" type="number" min="0" value="10"></input>
-			</div>
-			<div id="pointAutobuyer" hidden = true>
-				<input type="checkbox" id="pointAutoEnabled"></input><text>Autobuy the points upgrade.</text>
-			</div>
-			<div id="ipsiAutobuyer" hidden = true>
-				<input type="checkbox" id="baseIpsiAutoEnabled"></input><text>Autobuy base ipsiClickers at required base + x</text><input id="baseIpsiAutoAmt" type="number" min="0" value="0"></input>
-				<div id="logIpsiAutobuyer" hidden = true>
-					<input type="checkbox" id="logIpsiAutoEnabled"></input><text>Autobuy log ipsiClickers at x times required amount</text><input id="logIpsiAutoAmt" type="number" min="1" value="1"></input>
+			<div id="pointsTab">
+				<h1><span id="scoreTrack">0 points</span> (<span id="scoreBase">Base 2</span>)</h1>
+				<div style="position: relative;">
+					<button id = "pointButton" onclick = "addPoint()" class="pointButton buyable" style="float: left;">+1 point</button>
+					<button id = "pointGainButton" onclick = "pointGain()" class="pointButton" style="width: 100px; height: 200px; font-size: 12;">Increase base point gain by 1.<br>Cost: <span id="pointGainLabel">10 points</span></button><br>
+					<button id = "basePrestButton" onclick = "prestige()" class="baseButton buyable" style="width: 300px; height: 100px;">reset to enter base 3</button>
 				</div>
 			</div>
-			<script>
-					function baseAuto(){
-						if(baseAutoAmt.value < baseAutoAmt.min){
-							baseAutoAmt.value = baseAutoAmt.min
-						}
-						if(Math.round((log(score.decimal)/log(curBase))**((curBase**0.5)**logPointBoost)) >= baseAutoAmt.value){
-							if(basePrest.disabled == false){
-								if(baseAutoEnabled.checked){
-									prestige()
-								}
-							}
-						}
-					}
-					function pointsAuto(){
+			<div id="baseTab" hidden = true>
+				<h1 id=baseScore>You are in base 2</h1>
+				<p>warning: buying anything costing bases will not reset your points but will reset your points upgrades to keep cost scaling in sync.</p>
+				<div id="baseChange" hidden=true>
+					<input id="baseSlider" type="range" min="2" max="2" value="2" hidden=true></input>
+					<button onclick="fastEnterBase()" class="baseButton">Enter base <span id="baseSlideVal">2</span></button>
+				</div>
+				<text>upgrades: (you can hover over some for details)</text><br>
+				<button onclick = "baseUpgrade(1)" id="baseUpgrade1" cost="1" class="baseButton upgrade" style="float: left;">Divides the cost of the points upgrade by your current base. Cost: 1 base</button>
+				<button onclick = "baseUpgrade(4)" id="baseUpgrade4" cost="2" class="upgrade baseButton" style="float: left;">Multiplies your current ipsiClickers by 2 and you gain an extra ipsiClicker whenever you buy them. Cost: 2 bases</button>
+				<button onclick = "baseUpgrade(3)" id="baseUpgrade3" cost="3" class="upgrade baseButton" title="effect caped at x60" style="float: left;">Multiplies point gain by your current base. Cost: 3 bases</button>
+				<button onclick = "baseUpgrade(2)" id="baseUpgrade2" cost="5" class="upgrade baseButton" title="base^6 → base^(6-log60(base))" style="float: left;">Decreses the requirement for entering the next base. Cost: 5 bases</button>
+				<button onclick = "baseUpgrade(5)" id="baseUpgrade5" cost="8" class="upgrade baseButton" title="gain log_base(points) log points on reset" >Unlock log points, gained on base reset, and the log tab. Cost: 8 bases</button>
+				
+				<br><br>
+				<h1 id="ipsiAmt">You have 0 ipsiClickers</h1>
+				<button onclick = "ipsiClicker('base')" id="buyIpsi" cost="1" class="baseButton buyable" style="">Buy 1 ipsiClicker. Cost: 1 base</button>
+				<button onclick = "ipsiClicker('log')" id="buyIpsiLog" cost="1" timesBought="0" class="logButton buyable" style="" hidden=true>Buy 1 ipsiClicker. Cost: 1 log points</button><br>
+				<button onclick="bitwiseReset()" id="bitwisePrestigeButton" class="bitwiseButton buyable" style="height: 100px; width: 400px;" hidden=false>Reach base 60 and 60^3 ipsiClickers (currently 60^0).</button><br>
+				<text>Note: You gain more ipsiClickers the higher your base is when you buy. <span title="Your base after buying multiplies your ipsiClickers, then 1 gets added.">ⓘ</span> Also, ipsiClickers are hardcapped at 100.</text><button onclick="respecIpsi()">respec</button>
+				
+			</div>
+			<div id="logTab" hidden = true style="nowrap">
+				<h1 id="logAmount">You have 0 log points.</h1>
+				<button id="buyLogPath" onclick="logUpgrade(0)" class="logButton buyable" cost="60">Unlock another path of the log tree. Cost: 60 log points</button>
+				<h1 id="pathAmount">You have 0 unused paths.</h1>
+				<div style="position: relative; z-index: 1;">
+					<svg style="position: absolute; z-index: -1; inset: 0;" width="1125" height="1050">
+						<line x1=600px y1=750px x2=900px y2=525px stroke="white" stroke-width="10"/>
+						<line x1=600px y1=750px x2=300px y2=525px stroke="white" stroke-width="10"/>
 						
-						if(score.ge(pointGainCost)){
-							if(pointAutoEnabled.checked){
-								pointGain()
-							}
-						}
-					}
-					function baseIpsiAuto(){
-						if(logIpsiAutoAmt.value < 1){
-							logIpsiAutoAmt.value = 1
-						}
-						if(baseIpsiAutoAmt.value < 0){
-							baseIpsiAutoAmt.value = 0
-						}
-						if(logPoints/logIpsiAutoAmt.value > buyIpsiLog.getAttribute("cost")){
-							
-							if(logIpsiAutoEnabled.checked){
-								ipsiClicker("log")
-								return
-							}
-						}
 						
-						if(curBase-(2+Number(baseIpsiAutoAmt.value)) >= buyIpsi.getAttribute("cost")){
-							if(baseIpsiAutoEnabled.checked){
-								ipsiClicker("base")
-							}
-						}
-					}
+						<line x1=300px y1=525px x2=150px y2=300px stroke="white" stroke-width="10"/>
+						<line x1=300px y1=525px x2=450px y2=300px stroke="white" stroke-width="10"/>
+						
+						<line x1=900px y1=525px x2=750px y2=300px stroke="white" stroke-width="10"/>
+						<line x1=900px y1=525px x2=1050px y2=300px stroke="white" stroke-width="10"/>
+						
+						
+						<line x1=150px y1=300px x2=75px y2=75px stroke="white" stroke-width="10"/>
+						<line x1=150px y1=300px x2=225px y2=75px stroke="white" stroke-width="10"/>
+						
+						<line x1=450px y1=300px x2=375px y2=75px stroke="white" stroke-width="10"/>
+						<line x1=450px y1=300px x2=525px y2=75px stroke="white" stroke-width="10"/>
+						
+						<line x1=750px y1=300px x2=675px y2=75px stroke="white" stroke-width="10"/>
+						<line x1=750px y1=300px x2=825px y2=75px stroke="white" stroke-width="10"/>
+						
+						<line x1=1050px y1=300px x2=975px y2=75px stroke="white" stroke-width="10"/>
+						<line x1=1050px y1=300px x2=1125px y2=75px stroke="white" stroke-width="10"/>
+					</svg>
+					<button id="log1000" class="treeUpgrade" style="left: 0px; top: 0px; position: absolute;" onclick="logUpgrade(1000)">1000<br><br>Multiply point gain by the log<sub>base</sub> of your points.<br><br>  </button>
+					<button id="log1001" class="treeUpgrade" style="left: 150px; top: 0px; position: absolute;" onclick="logUpgrade(1001)" title="Base point gain increases by 4rt(base) (rounded each time bought)">1001<br><br>Increase the effect of the points upgrade.<br><br>  </button>
+					<button id="log1010" class="treeUpgrade" style="left: 300px; top: 0px; position: absolute;" onclick="logUpgrade(1010)">1010<br><br>Multiply point gain by the log<sub>2</sub> of your ipsiClickers.<br><br>  </button>
+					<button id="log1011" class="treeUpgrade" style="left: 450px; top: 0px; position: absolute;" onclick="logUpgrade(1011)">1011<br><br>Base upgrade 3 multiplies by your best base instead of your current base.<br><br>  </button>
+					<button id="log1100" class="treeUpgrade" style="left: 600px; top: 0px; position: absolute;" onclick="logUpgrade(1100)">1100<br><br>The ipsiClicker cost becomes a reqirement instead.<br><br>  </button>
+					<button id="log1101" class="treeUpgrade" style="left: 750px; top: 0px; position: absolute;" onclick="logUpgrade(1101)">1101<br><br>You can buy ipsiClickers using log points, you gain an amount equal to the sqrt of your log points before buying.<br><br>  </button>
+					<button id="log1110" class="treeUpgrade" style="left: 900px; top: 0px; position: absolute;" onclick="logUpgrade(1110)">1110<br><br>Unlock points upgrade autobuyer.<br><br>  </button>
+					<button id="log1111" class="treeUpgrade" style="left: 1050px; top: 0px; position: absolute;" onclick="logUpgrade(1111)" title="You can set the minimum multiplier it will buy at">1111<br><br>Unlock ipsiClicker autobuyer.<br><br>  </button>
 					
-				</script>
+					<button id="log100" class="treeUpgrade" style="left: 75px; top: 225px; position: absolute;" title="Requirement becomes 1 point because log(0) = -infinity">100<br><br>Remove the reqirement for base resetting in completed bases and auto re-enter a completed base.<br><br>  </button>
+					<button id="log101" class="treeUpgrade" style="left: 375px; top: 225px; position: absolute;">101<br><br>On base reset, start with an amount of points equal to your log points.<br><br>  </button>
+					<button id="log110" class="treeUpgrade" style="left: 675px; top: 225px; position: absolute;">110<br><br>Start with 100 ipsiClickers on respec (getting this upgrade respecs your ipsiClickers).<br><br>  </button>
+					<button id="log111" class="treeUpgrade" style="left: 975px; top: 225px; position: absolute;" title="You can set minimum log points to gain on reset">111<br><br>Unlock base autobuyer.<br><br>  </button>
+					
+					<button id="log10" class="treeUpgrade" style="left: 225px; top: 450px; position: absolute;">10<br><br>You can freely change your base, up to your best base.<br><br>  </button>
+					<button id="log11" class="treeUpgrade" style="left: 825px; top: 450px; position: absolute;" title="The multiplied portion of ipsiClickers is sqrted beyond 100">11<br><br>You can surpass 100 ipsiClickers, beyond 100 they provide a multiplier instead and are heavily softcapped.<br><br>  </button>
+					
+					<button id="log1" class="treeUpgrade" style="left: 525px; top: 675px; position: absolute;">1<br><br>Raise log points to the sqrt of the base you're exiting.<br><br>  </button>
+				</div>
+				
+				
+				
+				
+				
+				
+				
+			</div>
+			<div id="bitwiseTab" hidden="true">
+				<h1>You have <span id="bitwiseAmount">0</span> bitwise points, being bitwise-or-ed to your base point gain.</h1>
+				<text>There is nothing to do in this tab at the moment. In a few updates this will be the main subject of an update.</text><br>
+				<p>Bitwise operators are very unlike normal operators. The way that they work is you convert both inputs into binary and then sequentially do a logic gate between the nth digit of input 1 with the nth digit of input 2.</p>
+			</div>
+			<div id="autoTab" hidden = true>
+				<div id="baseAutobuyer" hidden = true>
+					<input type="checkbox" id="baseAutoEnabled"></input><text>Base reset at x log points.</text><input id="baseAutoAmt" type="number" min="0" value="10"></input>
+				</div>
+				<div id="pointAutobuyer" hidden = true>
+					<input type="checkbox" id="pointAutoEnabled"></input><text>Autobuy the points upgrade.</text>
+				</div>
+				<div id="ipsiAutobuyer" hidden = true>
+					<input type="checkbox" id="baseIpsiAutoEnabled"></input><text>Autobuy base ipsiClickers at required base + x</text><input id="baseIpsiAutoAmt" type="number" min="0" value="0"></input>
+					<div id="logIpsiAutobuyer" hidden = true>
+						<input type="checkbox" id="logIpsiAutoEnabled"></input><text>Autobuy log ipsiClickers at x times required amount</text><input id="logIpsiAutoAmt" type="number" min="1" value="1"></input>
+					</div>
+				</div>
+			</div>
+			<div id="optionsTab" hidden = true>
+				<input type="range" id="freex2" min='1' max='128' value="1" oninput="freeMult.innerHTML = freex2.value"></input><text>x<span id="freeMult">1</span> multiplier (for convenience, leave at x1 if you want to experience the game as intended)</text><br>
+				<button onclick="answer=confirm('are you sure you want to hard reset? this will delete all of your progress, and there will be no reward.');if(answer){localStorage.clear()};location.reload();">HARD RESET</button>
+			</div>
 		</div>
-		<div id="options" hidden = true>
-			<input type="range" id="freex2" min='1' max='128' value="1" oninput="freeMult.innerHTML = freex2.value"></input><text>x<span id="freeMult">1</span> multiplier (for convenience, leave at x1 if you want to experience the game as intended)</text>
-		</div>
-		
-		<script>
-			function getElement(elementName){
-				return document.getElementById(elementName)
-			}
-			
-			function multiplyThru(initial,list){
-				for(let i of list){
-					initial*=i
-				}
-				return Math.round(initial)
-			}
-			
-			function log(x,logBase=Math.E){
-				if(x == 0){
-					return 0
-				}
-				if(logBase == Math.E){
-					return Math.log(x)
-				}
-				else{
-					return Math.log(x)/Math.log(logBase)
-				}
-			}
-			
-			function factorial(x){
-				result = 1
-				for (let i = 1; i <= x; i++){
-					result *= i
-				}
-				return result
-			}
-			function myFactorial(x){
-				return factorial((x*2)-1)
-			}
-			
-			function bitwiseOr(p,q){
-				p=new base(p,2).value
-				q=new base(q,2).value
-				
-				while(q.length < p.length){
-					q="0"+q
-				}
-				while(p.length < q.length){
-					p="0"+p
-				}
-				
-				result = []
-				
-				for(let i = 0; i < p.length; i++){
-					result.push(String(Number(p[i])||Number(q[i])))
-				}
-				
-				value = 0
-				
-				for(let i = result.length-1; i >= 0; i--){
-					if(result[i]=='1'){
-						value += 2**(result.length-(i+1))
-					}
-				}
-				return value
-				
-			}
-			
-			//points tab elements that need to be used
-			var scoreTrack = getElement("score");
-			var basePrestButton = getElement("basePrest");
-			var pointGainButton = getElement("pointGainInc");
-			var gainLabel = getElement("pointGainCost");
-			var pointButton = getElement("plusPointButton");
-			var scoreBase = getElement("scoreBase");
-			
-			//base tab elements that need to be used
-			var baseScore = getElement("baseScore");
-			var baseUpgrades = [getElement("baseUpgrade1"),getElement("baseUpgrade2"),getElement("baseUpgrade3"),getElement("baseUpgrade4"),getElement("baseUpgrade5")]
-			var ipsiAmt = getElement("ipsiAmt");
-			
-			//general variables
-			var curBase = 2;
-			var cheats = false;
-			
-			//points variables
-			var score = new base(0,2);
-			var pointGainBase = 1;
-			var pointGainCost = curBase;
-			var initPointsUpgradeCostStep = 1
-			var pointsUpgradeTimesBought = 0
-			
-			//base variables
-			var enterCostForm = 1
-			var ipsiAmount = 0
-			var ipsiKey = -1
-			var baseMulti = false
-			var ipsiBonus = false
-			var bestBase = 2
-			var initIpsiAmt = 0
-			
-			//log variables
-			var logUnlocked = false
-			var logPoints = 0
-			var logUpgrades = {1:false,10:false,11:false,100:false,101:false,110:false,111:false,1000:false,1001:false,1010:false,1011:false,1100:false,1101:false,1110:false,1111:false}
-			var unspentPaths = 0
-			var totalPaths = 0
-			var logPointBoost = false
-			var ipsiMax = true;
-			var selfSyn = false;
-			var ipsiPointMulti = false;
-			var safeFastEnter = false;
-			var bestBaseMulti = false;
-			var freeIpsi = false;
-			var pointsUpgradeBoost = false;
-			var startWithLogPointsPoints = false;
-			
-			//bitwise variables
-			var bitwisePoints = 0
-			
-			//Things that need to update constantly
-			function updatePage(){
-				//console.log("updating");
-				//update page elements
-				scoreTrack.innerHTML = score.value;
-				score.convert(curBase);
-				gainLabel.innerHTML = "Cost: "+new base(pointGainCost,curBase).value;
-				pointButton.innerHTML = "+"+new base(multipliers(pointGainBase),curBase).value+" points";
-				scoreBase.innerHTML = "Base "+curBase;
-				baseScore.innerHTML = "You are in base "+curBase+". ("+(curBase-2)+" avalible to spend)"
-				ipsiAmt.innerHTML = "You have "+new base(ipsiAmount,10).value+" ipsiClickers"
-
-				//buttons
-				//Enter next base button
-				switch(enterCostForm){
-					case 1:
-						if(score.ge(curBase**(6+Math.floor(curBase/60)))){
-							basePrestButton.disabled = false;
-							if(logUnlocked == false){
-								basePrestButton.innerHTML = "Enter base "+(curBase+1)
-							}
-							else{
-								basePrestButton.innerHTML = "Reset for "+new base(Math.round((log(score.decimal)/log(curBase))**((curBase**0.5)**logPointBoost)),10).value+" log points"
-							}
-						}
-						else{
-							basePrestButton.disabled = true;
-							basePrestButton.innerHTML = "Reach "+new base(curBase**(6+Math.floor(curBase/60)),curBase).value+" points"
-						}
-						break;
-					case 2:
-						if(score.ge(Math.round(curBase**(6-(log(curBase)/log(60))+Math.floor(curBase/60))))){
-							basePrestButton.disabled = false;
-							if(logUnlocked == false){
-								basePrestButton.innerHTML = "Enter base "+(curBase+1)
-							}
-							else{
-								basePrestButton.innerHTML = "Reset for "+new base(Math.round((log(score.decimal)/log(curBase))**((curBase**0.5)**logPointBoost)),10).value+" log points"
-							}
-						}
-						else{
-							basePrestButton.disabled = true;
-							basePrestButton.innerHTML = "Reach "+ new base(Math.round(curBase**(6-((log(curBase)/log(60)))+Math.floor(curBase/60))),curBase).value +" points"
-						}
-						break
-					case 3:
-						if(curBase == bestBase){
-							if(score.ge(Math.round(curBase**(6-(log(curBase)/log(60))+Math.floor(curBase/60))))){
-								basePrestButton.disabled = false;
-								if(logUnlocked == false){
-									basePrestButton.innerHTML = "Enter base "+(curBase+1)
-								}
-								else{
-									basePrestButton.innerHTML = "Reset for "+new base(Math.round((log(score.decimal)/log(curBase))**((curBase**0.5)**logPointBoost)),10).value+" log points"
-								}
-							}
-							else{
-								basePrestButton.disabled = true;
-								basePrestButton.innerHTML = "Reach "+ new base(Math.round(curBase**(6-((log(curBase)/log(60)))+Math.floor(curBase/60))),curBase).value +" points"
-							}
-						}
-						else{
-							if(score.ge(1)){
-								basePrestButton.disabled = false;
-								basePrestButton.innerHTML = "Reset for "+new base(Math.round((log(score.decimal)/log(curBase))**((curBase**0.5)**logPointBoost)),10).value+" log points"
-							}
-							else{
-								basePrestButton.disabled = true;
-								basePrestButton.innerHTML = "Reach 1 point"
-							}
-						}
-				}
-				
-				//increase point gain button
-				if(score.ge(pointGainCost)){
-					pointGainButton.disabled = false;
-				}
-				else{
-					pointGainButton.disabled = true;
-				}
-				
-				//base upgrade buttons
-				for(let upgrade of baseUpgrades){
-					if((curBase-2)>=upgrade.getAttribute("cost")){
-						upgrade.disabled = false;
-					}
-					else{
-						upgrade.disabled = true;
-						
-					}
-				}
-				
-				//ipsiClicker button
-				if(ipsiAmount != 100 || ipsiMax == false){
-					if(ipsiAmount >= 100){
-						if(curBase-2 >= Number(buyIpsi.getAttribute("cost"))){
-							buyIpsi.disabled = false;
-							getElement("buyIpsi").innerHTML = "Buy " + new base((Math.round((ipsiAmount*((curBase-1)-Number(buyIpsi.getAttribute("cost"))))**0.5+1+ipsiBonus)),10).value + " ipsiClickers. Cost: "+getElement("buyIpsi").getAttribute("cost")+" bases"
-						}
-						else{
-							buyIpsi.disabled = true;
-							getElement("buyIpsi").innerHTML = "Buy " + new base((Math.round((ipsiAmount)**0.5+1+ipsiBonus)),10).value + " ipsiClickers. Cost: "+getElement("buyIpsi").getAttribute("cost")+" bases"
-						}
-					}
-					else{
-						if(curBase-2 >= Number(buyIpsi.getAttribute("cost"))){
-							buyIpsi.disabled = false;
-							getElement("buyIpsi").innerHTML = "Buy " + new base(((ipsiAmount*(curBase-Number(buyIpsi.getAttribute("cost")))+1+ipsiBonus)-ipsiAmount),10).value + " ipsiClickers. Cost: "+getElement("buyIpsi").getAttribute("cost")+" bases"
-						}
-						else{
-							buyIpsi.disabled = true;
-							getElement("buyIpsi").innerHTML = "Buy " + new base(((ipsiAmount*(2)+1+ipsiBonus)-ipsiAmount),10).value + " ipsiClickers. Cost: "+getElement("buyIpsi").getAttribute("cost")+" bases"
-						}
-					}
-				}
-				else{
-					buyIpsi.disabled = true;
-					getElement("buyIpsi").innerHTML = "At max ipsiClickers."
-					
-				}
-				
-				//log ipsiClicker button
-				if(logPoints > buyIpsiLog.getAttribute("cost")){
-					buyIpsiLog.disabled = false;
-					buyIpsiLog.innerHTML = "Buy "+ new base(Math.round(logPoints**0.5),10).value+" ipsiClickers. Cost: "+ new base(buyIpsiLog.getAttribute("cost"),10).value+" log points"
-				}
-				else{
-					buyIpsiLog.disabled = true;
-					buyIpsiLog.innerHTML = "Buy "+ new base(Math.round(buyIpsiLog.getAttribute("cost")**0.5),10).value+" ipsiClickers. Cost: "+ new base(buyIpsiLog.getAttribute("cost"),10).value+" log points"
-				}
-				
-				//log path button
-				if(logPoints >= buyLogPath.getAttribute("cost")){
-					if(totalPaths < 8){
-						buyLogPath.disabled = false;
-					}
-					else{
-						buyLogPath.disabled = true;
-					}
-				}
-				else{
-					buyLogPath.disabled = true;
-				}
-				
-				//check for endgame
-				if(ipsiAmount == Infinity){
-					body.innerHTML = "<h1>You reached infinite ipsiClickers, which breaks the entire game, so you win ig.</h1><p>Look forward to...<br>save data<br>named upgrades<br>log tree respecing<br>achievements<br>settings<br>a news ticker<br>...coming to an update near you!</p>"
-				}
-				
-				logAmount.innerHTML="You have "+new base(logPoints,10).value+" log points."
-				pathAmount.innerHTML = "You have "+unspentPaths+" unused paths."
-				
-				
-				//Bitwise reset button
-				
-				if(ipsiAmount >= 60**3){
-					bitwisePrestigeButton.innerHTML = "Reset everything up to this point for "+((Math.round(log(ipsiAmount,60)*100)/100)-2)+" (floored) bitwise points."
-					
-					bitwisePrestigeButton.disabled=false
-				}
-				else{
-					bitwisePrestigeButton.innerHTML = "Reach base 60 and 60^3 ipsiClickers (currently 60^"+(Math.round(log(ipsiAmount,60)*100)/100)+")."
-					
-					bitwisePrestigeButton.disabled=true
-				}
-				bitwiseAmount.innerHTML=bitwisePoints
-				
-			}
-			
-			//when you base reset
-			function prestige(){
-				if(logUnlocked){
-					logPoints += Math.round((log(score.decimal)/log(curBase))**((curBase**0.5)**logPointBoost))
-				}
-				if(bestBase == curBase){
-					if(base==60){
-						bestBase = 61
-						baseSlider.max = 60
-						curBase = 60
-					}else{
-						bestBase += 1
-						baseSlider.max = Number(baseSlider.max)+1
-						curBase ++;
-					}
-				}else{
-					if(enterCostForm != 3){
-						if(curBase == 60){
-							curBase = 60
-						}
-						else{
-							curBase ++;
-						}
-					}
-					
-				}
-				pointsUpgradeTimesBought = 0;
-				score = score.sub(score);
-				if(startWithLogPointsPoints){
-					score = score.add(logPoints)
-				}
-				
-				
-				
-				document.getElementById("scoreBase").innerHTML = "Base "+curBase;
-				pointGainCost = curBase**initPointsUpgradeCostStep;
-				pointGainBase = 1;
-				reloadIpsi()
-				basePrestButton.disabled = true
-				
-				
-			}
-			
-			//when you bitwise reset
-			function bitwiseReset(){
-				console.log("you are preforming a bitwise reset...")
-				
-				bitwisePoints += Math.floor(log(ipsiAmount,60))-2
-				bitwiseTab.hidden=false
-				//points variables
-				score = new base(0,2);
-				pointGainBase = 1;
-				pointGainCost = curBase;
-				initPointsUpgradeCostStep = 1
-				pointsUpgradeTimesBought = 0
-				
-				//base variables
-				enterCostForm = 1
-				ipsiAmount = 0
-				ipsiKey = -1
-				baseMulti = false
-				ipsiBonus = false
-				bestBase = 2
-				initIpsiAmt = 0
-				
-				//log variables
-				logUnlocked = false
-				logPoints = 0
-				unspentPaths = 0
-				totalPaths = 0
-				logPointBoost = false
-				ipsiMax = true;
-				selfSyn = false;
-				ipsiPointMulti = false;
-				safeFastEnter = false;
-				bestBaseMulti = false;
-				freeIpsi = false;
-				pointsUpgradeBoost = false;
-				startWithLogPointsPoints = false;
-				
-				baseAutoEnabled.checked=false
-				pointAutoEnabled.checked=false
-				baseIpsiAutoEnabled.checked=false
-				logIpsiAutoEnabled.checked=false
-				autoTab.hidden=true
-				baseAutobuyer.hidden=true
-				pointAutobuyer.hidden=true
-				ipsiAutobuyer.hidden=true
-				logIpsiAutobuyer.hidden=true
-				
-				buyIpsiLog.hidden=true
-				
-				baseUpgrades = [getElement("baseUpgrade1"),getElement("baseUpgrade2"),getElement("baseUpgrade3"),getElement("baseUpgrade4"),getElement("baseUpgrade5")]
-				baseUpgrade1.innerHTML="Divides the cost of the points upgrade by your current base. Cost: 1 base"
-				baseUpgrade2.innerHTML="Decreses the requirement for entering the next base. Cost: 5 bases"
-				baseUpgrade3.innerHTML="Multiplies point gain by your current base. Cost: 3 bases"
-				baseUpgrade4.innerHTML="Multiplies your current ipsiClickers by 2 and you gain an extra ipsiClicker whenever you buy them. Cost: 2 bases"
-				baseUpgrade5.innerHTML="Unlock log points, gained on base reset, and the log tab. Cost: 8 bases"
-				
-				logNumbers=[1,10,11,100,101,110,111,1000,1001,1010,1011,1100,1101,1110,1111]
-				for(let i of logNumbers){
-					getElement("log"+i).classList.remove("logUpgrade")
-				}
-				
-				
-			}
-			
-			//The only pre-base upgrade
-			function pointGain(){
-				pointGainBase += Math.max(1,(curBase**0.25)**pointsUpgradeBoost);
-				score = score.sub(pointGainCost);
-				pointGainCost *= curBase;
-				pointsUpgradeTimesBought ++;
-			}
-			
-			//switch tabs
-			function tab(tab){
-				var tabs = [document.getElementById("base"),document.getElementById("points"),getElement("log"),getElement("auto"),getElement("options"),getElement("bitwise")]
-				
-				for(let i of tabs){
-					i.hidden = true
-				}
-				document.getElementById(tab).hidden = false
-				
-			}
-			
-			//buying base upgrades
-			function baseUpgrade(number){
-				//upgrade 1
-				if(number == 1){
-					//curBase -= 1;
-					initPointsUpgradeCostStep = 0;
-					getElement("baseUpgrade1").innerHTML = "Divides the cost of the points upgrade by your current base. Bought"
-				}
-				//upgrade 2
-				if(number == 2){
-					//curBase -= 5;
-					if(enterCostForm != 3){
-						enterCostForm = 2
-					}
-						
-					getElement("baseUpgrade2").innerHTML = "Decreses the requirement for entering the next base. Bought"
-				}
-				//upgrade 3
-				if (number == 3){
-					//curBase -= 3;
-					baseMulti = true;
-					getElement("baseUpgrade3").innerHTML = "Multiplies point gain by your current base. Bought"
-				}
-				//upgrade 4
-				if(number == 4){
-					//curBase -= 3;
-					ipsiBonus = true
-					if(ipsiAmount != 100 || ipsiMax == false){
-						ipsiAmount *= 2;
-					}
-					getElement("baseUpgrade4").innerHTML = "Multiplies your current ipsiClickers by 2 and you gain an extra ipsiClicker whenever you buy them. Bought"
-				}
-				//upgrade 5
-				if(number == 5){
-					logUnlocked = true;
-					getElement("baseUpgrade5").innerHTML = "Unlock log points, gained on base reset, and the log tab. Bought"
-					logTab.hidden = false
-					baseChange.hidden = false
-					basePrest.classList.add("logButton")
-				}
-				curBase -= getElement("baseUpgrade"+number).getAttribute("cost")
-				pointGainBase = 1;
-				pointGainCost = curBase**initPointsUpgradeCostStep;
-				baseUpgrades.splice(baseUpgrades.indexOf(getElement("baseUpgrade"+number)),1)
-				getElement("baseUpgrade"+number).disabled = true;
-				reloadIpsi()
-			}
-			
-			//buying log upgrades
-			function logUpgrade(number){
-				if(number == 0){
-					unspentPaths += 1
-					totalPaths += 1
-					logPoints -= buyLogPath.getAttribute("cost")
-					buyLogPath.setAttribute("cost",buyLogPath.getAttribute("cost")*(6))
-					pathAmount.innerHTML = "You have "+unspentPaths+" unused paths."
-					if(totalPaths == 2 || totalPaths == 4 || totalPaths == 6){
-						buyLogPath.setAttribute("cost",buyLogPath.getAttribute("cost")*(6))
-					}
-					if(totalPaths >= 8){
-						buyLogPath.innerHTML = "At max paths"
-					}else{
-						buyLogPath.innerHTML = "Unlock another path of the log tree. Cost: "+new base(buyLogPath.getAttribute("cost"),10).value+" log points"
-					}
-					return
-				}
-				if(getElement("log"+number).classList.contains("logButton") == true){
-					return
-				}
-				
-				if(unspentPaths >= 1){
-					if(getElement("log"+number).classList.contains("logButton")){
-						return
-					}
-					getElement("log"+number).classList.add("logButton")
-					
-				}
-				if(number == 1){
-					logPointBoost = true
-					
-				}
-				if(number == 10){
-					logUpgrade(1)
-					baseSlider.hidden = false
-				}
-				if(number == 11){
-					logUpgrade(1)
-					ipsiMax = false;
-				}
-				if(number == 100){
-					logUpgrade(10)
-					enterCostForm = 3
-				}
-				if(number == 101){
-					logUpgrade(10)
-					startWithLogPointsPoints = true;
-				}
-				if(number == 110){
-					logUpgrade(11)
-					initIpsiAmt = 100
-					ipsiAmount = initIpsiAmt
-					getElement("buyIpsi").setAttribute("cost",1)
-					getElement("buyIpsi").innerHTML = "Buy 1 ipsiClicker. Cost: "+getElement("buyIpsi").getAttribute("cost")+" bases"
-					reloadIpsi()
-				}
-				if(number == 111){
-					logUpgrade(11)
-					autoTab.hidden = false
-					baseAutobuyer.hidden = false
-					setInterval(baseAuto,0)
-				}
-				if(number == 1000){
-					if(unspentPaths >= 1){
-						logUpgrade(100)
-						unspentPaths -= 1
-						selfSyn = true;
-					}
-				}
-				if(number == 1001){
-					if(unspentPaths >= 1){
-						logUpgrade(100)
-						unspentPaths -= 1
-						pointsUpgradeBoost = true;
-					}
-				}
-				if(number == 1010){
-					if(unspentPaths >= 1){
-						logUpgrade(101)
-						unspentPaths -= 1
-						ipsiPointMulti = true
-					}
-				}
-				if(number == 1011){
-					if(unspentPaths >= 1){
-						logUpgrade(101)
-						unspentPaths -= 1
-						bestBaseMulti = true;
-					}
-				}
-				if(number == 1100){
-					if(unspentPaths >= 1){
-						logUpgrade(110)
-						unspentPaths -= 1
-						freeIpsi = true;
-					}
-				}
-				if(number == 1101){
-					if(unspentPaths >= 1){
-						logUpgrade(110)
-						unspentPaths -= 1
-						buyIpsiLog.hidden = false
-						buyIpsi.style="float: left;"
-					}
-				}
-				if(number == 1110){
-					if(unspentPaths >= 1){
-						logUpgrade(111)
-						unspentPaths -= 1
-						pointAutobuyer.hidden = false
-						setInterval(pointsAuto,0)
-					}
-				}
-				if(number == 1111){
-					if(unspentPaths >= 1){
-						logUpgrade(111)
-						unspentPaths -= 1
-						ipsiAutobuyer.hidden = false
-						setInterval(baseIpsiAuto,0)
-						if(buyIpsiLog.hidden == false){
-							logIpsiAutobuyer.hidden = false
-						}
-					}
-				}
-				
-			}
-			
-			//buying ipsiClickers
-			function ipsiClicker(currency){
-				switch(currency){
-					case "base":
-						var cost = getElement("buyIpsi").getAttribute("cost")
-						
-						
-						if(ipsiAmount >= 100){
-							ipsiAmount = ipsiAmount + Math.round((ipsiAmount*(curBase-1-Number(cost)))**0.5)+1+ipsiBonus
-						}
-						else{
-							ipsiAmount *= curBase-Number(cost)
-							ipsiAmount += 1+ipsiBonus
-						}
-						if(!freeIpsi){
-							curBase -= Number(cost)
-							pointGainBase = 1;
-							pointGainCost = curBase**initPointsUpgradeCostStep;
-						}
-						if(ipsiAmount > 100 && ipsiMax){
-							ipsiAmount = 100
-						}
-						getElement("buyIpsi").setAttribute("cost",Number(cost)+1)
-						
-						cost = getElement("buyIpsi").getAttribute("cost")
-						getElement("buyIpsi").innerHTML = "Buy 1 ipsiClicker. Cost: "+cost+" bases"
-						reloadIpsi()
-						break
-					case "log":
-						var cost = buyIpsiLog.getAttribute("cost")
-						var timesBought = buyIpsiLog.getAttribute("timesBought")
-						buyIpsiLog.setAttribute("timesBought",Number(timesBought)+1)
-						ipsiAmount += Math.round(logPoints ** 0.5)
-						if(!freeIpsi){
-							logPoints -= cost
-						}
-						buyIpsiLog.setAttribute("cost",myFactorial(buyIpsiLog.getAttribute("timesBought")))
-				}
-			}
-			
-			//respec ipsiClickers to try for better multipliers
-			function respecIpsi(){
-				var response = confirm("Are you sure you want to reset your ipsiClickers? This is only useful if you want to try for better multipliers!")
-				if(response){
-					ipsiAmount = initIpsiAmt
-					
-					getElement("buyIpsi").setAttribute("cost",1)
-					buyIpsiLog.setAttribute("cost",1)
-					buyIpsiLog.setAttribute("timesBought",0)
-					getElement("buyIpsi").innerHTML = "Buy 1 ipsiClicker. Cost: "+getElement("buyIpsi").getAttribute("cost")+" bases"
-					reloadIpsi()
-				}
-			}
-			
-			//contains the code for possible multipliers
-			function multipliers(baseAmt){
-				multis = [];
-				multis.push(Math.min(Math.max(curBase,bestBase**bestBaseMulti)**baseMulti,60))
-				//multis.push(1000000000000**cheats)
-				if(ipsiAmount > 100){
-					multis.push(ipsiAmount/100)
-				}
-				multis.push(((log(score.decimal+1)/log(curBase))+1)**selfSyn)
-				multis.push((log(ipsiAmount)/log(2))**ipsiPointMulti)
-				multis.push(freex2.value)
-				
-				
-				return multiplyThru(bitwiseOr(baseAmt,bitwisePoints),multis);
-			}
-			
-			function reloadIpsi(){
-				if(ipsiKey != -1){
-					clearInterval(ipsiKey)
-				}
-				if(ipsiAmount > 0){
-					ipsiKey = setInterval(addPoint,1000/(ipsiAmount))
-				}
-				
-			}
-			
-			//cheats
-			function enableCheats(){
-				cheats = true
-				ipsiAmount = 100;
-				reloadIpsi();
-				baseUpgrade(1)
-				baseUpgrade(2)
-				baseUpgrade(3)
-				baseUpgrade(4)
-				baseUpgrade(5)
-				curBase = 2
-				bestBase = 10
-				baseSlider.max = "10"
-			}
-			//enableCheats()
-			
-			setInterval(updatePage,0)
-		</script>
+		<script src="main.js"></script>
+		<script src="Autosave.js"></script>
+		<script src="news.js"></script>
 	</body>
 </html>
